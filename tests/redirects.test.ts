@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, test, vi } from "vitest";
 import {
   allowedReturnOrigins,
+  isCenterOSDesktopRedirectUrl,
   isAllowedOAuthRedirectUrl,
   isAllowedOAuthRequest,
   safeExternalReturnUrl,
@@ -10,6 +11,8 @@ import { allowedOAuthClients } from "@/lib/auth/oauth-allowlist";
 
 const websiteCallback =
   "https://preview.roboticscenter.ai/auth/sso/callback";
+const centerOsProductionCallback = "centeros://auth/callback";
+const centerOsStagingCallback = "centeros-staging://auth/callback";
 
 function stubMappedOAuthClient() {
   vi.stubEnv(
@@ -122,6 +125,135 @@ describe("OAuth consent allowlists", () => {
     expect(
       isAllowedOAuthRedirectUrl(
         "https://preview.roboticscenter.ai/auth/sso/callback/extra?code=abc",
+      ),
+    ).toBe(false);
+  });
+
+  test.each([
+    ["production", "centeros-desktop", centerOsProductionCallback],
+    ["staging", "centeros-staging-desktop", centerOsStagingCallback],
+  ])(
+    "allows only the exact CenterOS %s callback for its explicitly mapped client",
+    (_environment, clientId, callback) => {
+      vi.stubEnv(
+        "AUTH_ALLOWED_OAUTH_CLIENTS",
+        JSON.stringify({ [clientId]: [callback] }),
+      );
+
+      expect(
+        isAllowedOAuthRequest({
+          clientId,
+          redirectUri: callback,
+        }),
+      ).toBe(true);
+      expect(
+        isAllowedOAuthRedirectUrl(
+          `${callback}?code=abc&state=123`,
+          callback,
+        ),
+      ).toBe(true);
+      expect(
+        isCenterOSDesktopRedirectUrl(
+          new URL(`${callback}?code=abc&state=123`),
+        ),
+      ).toBe(true);
+    },
+  );
+
+  test.each([
+    ["wrong host", "centeros-staging://evil/callback"],
+    ["wrong path", "centeros-staging://auth/callback/extra"],
+    ["wrong scheme", "other-app://auth/callback"],
+    ["credentials", "centeros-staging://user:pass@auth/callback"],
+  ])("rejects a staging CenterOS callback with a %s", (_case, redirectUri) => {
+    vi.stubEnv(
+      "AUTH_ALLOWED_OAUTH_CLIENTS",
+      JSON.stringify({
+        "centeros-staging-desktop": [centerOsStagingCallback],
+      }),
+    );
+
+    expect(
+      isAllowedOAuthRequest({
+        clientId: "centeros-staging-desktop",
+        redirectUri,
+      }),
+    ).toBe(false);
+    expect(
+      isAllowedOAuthRedirectUrl(`${redirectUri}?code=abc&state=123`),
+    ).toBe(false);
+    expect(isCenterOSDesktopRedirectUrl(new URL(redirectUri))).toBe(false);
+  });
+
+  test.each([
+    ["upper-case host", "centeros://AUTH/callback"],
+    ["port", "centeros://auth:443/callback"],
+    ["encoded path", "centeros://auth/%63allback"],
+    ["trailing slash", "centeros://auth/callback/"],
+    ["script scheme", "javascript://auth/callback"],
+  ])("rejects a production CenterOS callback with a %s", (_case, redirectUri) => {
+    vi.stubEnv(
+      "AUTH_ALLOWED_OAUTH_CLIENTS",
+      JSON.stringify({ "centeros-desktop": [centerOsProductionCallback] }),
+    );
+
+    expect(
+      isAllowedOAuthRequest({ clientId: "centeros-desktop", redirectUri }),
+    ).toBe(false);
+    expect(
+      isAllowedOAuthRedirectUrl(`${redirectUri}?code=abc&state=123`),
+    ).toBe(false);
+  });
+
+  test("fails closed when configuration lists an unsupported custom scheme", () => {
+    vi.stubEnv(
+      "AUTH_ALLOWED_OAUTH_CLIENTS",
+      JSON.stringify({
+        "centeros-desktop": [centerOsProductionCallback],
+        "other-desktop": ["centeros://evil/callback"],
+      }),
+    );
+
+    expect(allowedOAuthClients().size).toBe(0);
+    expect(
+      isAllowedOAuthRequest({
+        clientId: "centeros-desktop",
+        redirectUri: centerOsProductionCallback,
+      }),
+    ).toBe(false);
+  });
+
+  test("rejects cross-environment CenterOS client and callback pairings", () => {
+    vi.stubEnv(
+      "AUTH_ALLOWED_OAUTH_CLIENTS",
+      JSON.stringify({
+        "centeros-desktop": [centerOsProductionCallback],
+        "centeros-staging-desktop": [centerOsStagingCallback],
+      }),
+    );
+
+    expect(
+      isAllowedOAuthRequest({
+        clientId: "centeros-desktop",
+        redirectUri: centerOsStagingCallback,
+      }),
+    ).toBe(false);
+    expect(
+      isAllowedOAuthRequest({
+        clientId: "centeros-staging-desktop",
+        redirectUri: centerOsProductionCallback,
+      }),
+    ).toBe(false);
+    expect(
+      isAllowedOAuthRedirectUrl(
+        `${centerOsStagingCallback}?code=abc&state=123`,
+        centerOsProductionCallback,
+      ),
+    ).toBe(false);
+    expect(
+      isAllowedOAuthRedirectUrl(
+        `${centerOsProductionCallback}?code=abc&state=123`,
+        centerOsStagingCallback,
       ),
     ).toBe(false);
   });

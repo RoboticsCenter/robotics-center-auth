@@ -7,12 +7,13 @@ import {
   GlobeIcon,
   PlatformIcon,
 } from "@/components/icons";
+import { platformSignInHref } from "@/lib/auth/platform-sso";
 
 export const metadata: Metadata = {
   title: "Choose an application",
 };
 
-const applications = [
+const applications = (platformHref: string | null) => [
   {
     name: "Robotics Center",
     description:
@@ -27,11 +28,11 @@ const applications = [
     name: "Data Platform",
     description:
       "Manage robotics data, deployments, analytics, and connected operations.",
-    href: "https://platform.roboticscenter.ai/",
+    href: platformHref ?? "https://platform.roboticscenter.ai/",
     domain: "platform.roboticscenter.ai",
     className: "app-icon-violet",
     icon: PlatformIcon,
-    available: false,
+    available: platformHref !== null,
   },
   {
     name: "CenterOS",
@@ -46,6 +47,7 @@ const applications = [
 ];
 
 export default function LauncherPage() {
+  const platformHref = platformSignInHref();
   return (
     <AuthShell wide>
       <section className="launcher-panel" aria-labelledby="launcher-title">
@@ -63,13 +65,14 @@ export default function LauncherPage() {
           <h1 id="launcher-title">Where would you like to go?</h1>
           <p>
             Use your Robotics Center account across connected applications.
-            Website access is available now; Platform and CenterOS sign-in will
-            be added separately.
+            {platformHref
+              ? " Website and Data Platform access are available now; CenterOS sign-in will be added separately."
+              : " Website access is available now; Platform and CenterOS sign-in will be added separately."}
           </p>
         </div>
 
         <div className="app-grid">
-          {applications.map((application) => {
+          {applications(platformHref).map((application) => {
             const Icon = application.icon;
             const content = (
               <>

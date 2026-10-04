@@ -5,6 +5,11 @@ import {
   isAllowedOAuthRequest,
 } from "@/lib/auth/redirects";
 import { hasSameOrigin } from "@/lib/auth/request";
+import {
+  attestMfaAuthorization,
+  isMfaEnabled,
+  mfaStepUpRedirect,
+} from "@/lib/auth/mfa";
 
 export async function POST(request: Request) {
   if (!hasSameOrigin(request)) {
@@ -20,6 +25,30 @@ export async function POST(request: Request) {
 
   const responseHeaders = new Headers();
   const supabase = await createServerSupabaseClient(responseHeaders);
+  let claims: { aal?: unknown } | undefined;
+  if (decision === "approve" && isMfaEnabled()) {
+    const { data: claimData } = await supabase.auth.getClaims();
+    claims = claimData?.claims;
+    let stepUp: string | null;
+    try {
+      stepUp = await mfaStepUpRedirect(
+        supabase,
+        claims,
+        `/oauth/consent?authorization_id=${encodeURIComponent(authorizationId)}`,
+      );
+    } catch {
+      return NextResponse.json(
+        { error: "Two-step verification is unavailable" },
+        { status: 503, headers: responseHeaders },
+      );
+    }
+    if (stepUp) {
+      return NextResponse.redirect(new URL(stepUp, request.url), {
+        status: 303,
+        headers: responseHeaders,
+      });
+    }
+  }
   const details =
     await supabase.auth.oauth.getAuthorizationDetails(authorizationId);
   if (
@@ -58,6 +87,9 @@ export async function POST(request: Request) {
       { error: "Authorization failed" },
       { status: 400, headers: responseHeaders },
     );
+  }
+  if (decision === "approve") {
+    await attestMfaAuthorization(supabase, claims, authorizationId);
   }
   return NextResponse.redirect(result.data.redirect_url, {
     status: 303,

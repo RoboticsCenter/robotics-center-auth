@@ -17,6 +17,7 @@ import {
   signupConfirmationResendParams,
 } from "@/lib/auth/resend-confirmation";
 import { stashPortalReturn } from "@/lib/auth/return-cookie";
+import { isMfaEnabled, mfaChallengePath } from "@/lib/auth/mfa";
 
 type AuthMode = "signin" | "signup";
 type AuthAction = AuthMode | "resend";
@@ -120,6 +121,17 @@ export function AuthPortal({
         const { error: signInError } =
           await supabase.auth.signInWithPassword({ email, password });
         if (signInError) throw signInError;
+        if (isMfaEnabled()) {
+          const { data: assurance } =
+            await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+          if (
+            assurance?.nextLevel === "aal2" &&
+            assurance.currentLevel !== "aal2"
+          ) {
+            window.location.assign(mfaChallengePath(next));
+            return;
+          }
+        }
         finish();
         return;
       }

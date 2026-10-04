@@ -3,6 +3,7 @@ import { AuthShell } from "@/components/auth-shell";
 import { Brand } from "@/components/brand";
 import { ConsentActions } from "@/components/consent-actions";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { attestMfaAuthorization, mfaStepUpRedirect } from "@/lib/auth/mfa";
 import {
   isAllowedOAuthRedirectUrl,
   isAllowedOAuthRequest,
@@ -17,14 +18,23 @@ export default async function ConsentPage({ searchParams }: Props) {
   if (!authorizationId) redirect("/error?reason=missing_authorization");
 
   const supabase = await createServerSupabaseClient();
+  const consentPath = `/oauth/consent?authorization_id=${encodeURIComponent(
+    authorizationId,
+  )}`;
   const { data: claims } = await supabase.auth.getClaims();
   if (!claims?.claims) {
-    redirect(
-      `/?return_to=${encodeURIComponent(
-        `/oauth/consent?authorization_id=${authorizationId}`,
-      )}`,
-    );
+    redirect(`/?return_to=${encodeURIComponent(consentPath)}`);
   }
+
+  // Before getAuthorizationDetails: for a client the user already consented
+  // to, that call approves the request on the spot and returns the code.
+  let stepUp: string | null;
+  try {
+    stepUp = await mfaStepUpRedirect(supabase, claims.claims, consentPath);
+  } catch {
+    redirect("/error?reason=mfa_unavailable");
+  }
+  if (stepUp) redirect(stepUp);
 
   const { data, error } =
     await supabase.auth.oauth.getAuthorizationDetails(authorizationId);
@@ -34,6 +44,7 @@ export default async function ConsentPage({ searchParams }: Props) {
     if (!isAllowedOAuthRedirectUrl(data.redirect_url)) {
       redirect("/error?reason=untrusted_client");
     }
+    await attestMfaAuthorization(supabase, claims.claims, authorizationId);
     redirect(data.redirect_url);
   }
 

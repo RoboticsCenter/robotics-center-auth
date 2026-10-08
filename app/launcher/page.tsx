@@ -31,7 +31,7 @@ const applications = [
     domain: "platform.roboticscenter.ai",
     className: "app-icon-violet",
     icon: PlatformIcon,
-    available: false,
+    available: true,
   },
   {
     name: "CenterOS",
@@ -63,8 +63,8 @@ export default function LauncherPage() {
           <h1 id="launcher-title">Where would you like to go?</h1>
           <p>
             Use your Robotics Center account across connected applications.
-            Website access is available now; Platform and CenterOS sign-in will
-            be added separately.
+            Website and Data Platform sign-in are available now; CenterOS
+            sign-in will be added separately.
           </p>
         </div>
 

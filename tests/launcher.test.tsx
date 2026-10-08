@@ -31,16 +31,17 @@ function textContent(node: ReactNode): string {
 }
 
 describe("application launcher", () => {
-  test("does not link Platform or CenterOS before their SSO integrations exist", () => {
+  test("links the website and Data Platform; CenterOS waits for its SSO integration", () => {
     const page = LauncherPage();
     expect(elements(page, "a").map((item) => props(item).href)).toEqual([
       "https://www.roboticscenter.ai/",
+      "https://platform.roboticscenter.ai/",
     ]);
     expect(
       elements(page, "div").filter(
         (item) => props(item)["aria-disabled"] === "true",
       ),
-    ).toHaveLength(2);
+    ).toHaveLength(1);
   });
 
   test("uses same-origin POST for launcher sign out", () => {

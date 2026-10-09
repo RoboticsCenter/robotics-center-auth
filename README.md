@@ -37,6 +37,9 @@ Open [http://localhost:3000](http://localhost:3000).
 - `/auth/callback` — Supabase login/recovery callback
 - `/oauth/consent` — first-party OAuth authorization screen
 - `/logout` — global portal signout with allowlisted return
+- `/mfa`, `/mfa/enroll`, `/mfa/challenge`, `/mfa/recovery` — TOTP two-step
+  verification, dark unless `NEXT_PUBLIC_AUTH_MFA_ENABLED=true` (see
+  [docs/mfa.md](docs/mfa.md))
 
 Sign-in, sign-up, Google, and OAuth consent `return_to` values remain restricted
 to portal-local paths. Only password recovery may carry an absolute post-update

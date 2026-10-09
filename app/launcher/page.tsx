@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { AuthShell } from "@/components/auth-shell";
 import { Brand } from "@/components/brand";
 import {
@@ -7,6 +8,7 @@ import {
   GlobeIcon,
   PlatformIcon,
 } from "@/components/icons";
+import { isMfaEnabled } from "@/lib/auth/mfa";
 
 export const metadata: Metadata = {
   title: "Choose an application",
@@ -115,6 +117,11 @@ export default function LauncherPage() {
           Available application links never carry access or refresh tokens in
           the URL.
         </p>
+        {isMfaEnabled() ? (
+          <Link className="back-link" href="/mfa">
+            Two-step verification
+          </Link>
+        ) : null}
       </section>
     </AuthShell>
   );

@@ -167,8 +167,10 @@ h1, h2, h3 { font-family: var(--font-display); font-weight: 400; }
   min-height: 560px;
   overflow: hidden;
   flex-direction: column;
-  justify-content: center;
+  justify-content: flex-start;
   padding: 52px 44px;
+  /* Keep the brand block anchored as the adjacent form grows between modes. */
+  padding-block-start: clamp(52px, 16svh, 112px);
   background: linear-gradient(150deg, #06182f 0%, #0f2a54 55%, #1a4482 100%);
   color: white;
 }
@@ -537,7 +539,10 @@ h1, h2, h3 { font-family: var(--font-display); font-weight: 400; }
 @media (max-width: 1000px) {
   .auth-main { padding: 32px 24px; }
   .shell-form-area { padding: 36px 32px; }
-  .auth-aside { padding: 40px 32px; }
+  .auth-aside {
+    padding: 40px 32px;
+    padding-block-start: clamp(40px, 16svh, 104px);
+  }
   .aside-title { font-size: 44px; }
   .aside-path { gap: 8px; font-size: 16px; }
 }

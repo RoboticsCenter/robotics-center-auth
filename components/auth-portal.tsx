@@ -1,13 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { FormEvent, useEffect, useId, useState } from "react";
+import { FormEvent, type KeyboardEvent, useEffect, useId, useState } from "react";
 import {
   isAuthApiError,
   isAuthRetryableFetchError,
 } from "@supabase/supabase-js";
 import { AuthShell } from "@/components/auth-shell";
-import { Brand } from "@/components/brand";
 import { EyeIcon, GoogleIcon, ShieldIcon } from "@/components/icons";
 import { createBrowserSupabaseClient } from "@/lib/supabase/browser";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
@@ -96,6 +95,20 @@ export function AuthPortal({
     setSignupSubmitted(false);
     setSignupEmail("");
     setResendCooldown(0);
+  }
+
+  function handleTabKeyDown(event: KeyboardEvent<HTMLButtonElement>) {
+    if (!["ArrowLeft", "ArrowRight", "Home", "End"].includes(event.key)) return;
+    event.preventDefault();
+    const nextMode = event.key === "Home"
+      ? "signin"
+      : event.key === "End"
+        ? "signup"
+        : mode === "signin" ? "signup" : "signin";
+    selectMode(nextMode);
+    event.currentTarget.parentElement
+      ?.querySelector<HTMLButtonElement>(`[data-mode="${nextMode}"]`)
+      ?.focus();
   }
 
   function finish() {
@@ -212,39 +225,53 @@ export function AuthPortal({
   return (
     <AuthShell>
       <section className="auth-card" aria-labelledby="auth-title">
-        <div className="card-highlight" aria-hidden="true" />
-        <Brand />
+        <div className="auth-heading">
+          <h1 id="auth-title">
+            {mode === "signin" ? "Sign in" : "Create your account"}
+          </h1>
+          <p>
+            {mode === "signin"
+              ? "Use your Robotics Center account."
+              : "Get started with Robotics Center."}
+          </p>
+        </div>
 
         <div className="auth-tabs" role="tablist" aria-label="Authentication mode">
           <button
             className={mode === "signin" ? "auth-tab active" : "auth-tab"}
             type="button"
             role="tab"
+            id={`${formId}-signin-tab`}
+            data-mode="signin"
+            tabIndex={mode === "signin" ? 0 : -1}
+            onKeyDown={handleTabKeyDown}
             aria-selected={mode === "signin"}
             aria-controls={formId}
             onClick={() => selectMode("signin")}
           >
-            Sign In
+            Sign in
           </button>
           <button
             className={mode === "signup" ? "auth-tab active" : "auth-tab"}
             type="button"
             role="tab"
+            id={`${formId}-signup-tab`}
+            data-mode="signup"
+            tabIndex={mode === "signup" ? 0 : -1}
+            onKeyDown={handleTabKeyDown}
             aria-selected={mode === "signup"}
             aria-controls={formId}
             onClick={() => selectMode("signup")}
           >
-            Sign Up
+            Create account
           </button>
         </div>
 
-        <div id={formId} role="tabpanel">
-          <h1 id="auth-title" className="sr-only">
-            {mode === "signin"
-              ? "Sign in to Robotics Center of Silicon Valley"
-              : "Create your Robotics Center of Silicon Valley account"}
-          </h1>
-
+        <div
+          id={formId}
+          role="tabpanel"
+          aria-labelledby={`${formId}-${mode}-tab`}
+        >
           <button
             className="oauth-button"
             type="button"
@@ -256,7 +283,7 @@ export function AuthPortal({
           </button>
 
           <div className="divider" aria-hidden="true">
-            <span>or</span>
+            <span>or continue with email</span>
           </div>
 
           <form className="auth-form" onSubmit={handleSubmit}>
@@ -300,10 +327,18 @@ export function AuthPortal({
               />
             </label>
 
-            <label className="field-label">
-              <span>Password</span>
+            <div className="field-label">
+              <div className="field-heading">
+                <label htmlFor={`${formId}-password`}>Password</label>
+                {mode === "signin" && (
+                  <Link href={`/forgot-password?return_to=${encodeURIComponent(next)}`}>
+                    Forgot password?
+                  </Link>
+                )}
+              </div>
               <span className="password-field">
                 <input
+                  id={`${formId}-password`}
                   className="text-input"
                   type={showPassword ? "text" : "password"}
                   name="password"
@@ -326,20 +361,16 @@ export function AuthPortal({
                   <EyeIcon className="eye-icon" />
                 </button>
               </span>
-            </label>
+            </div>
 
-            {mode === "signin" ? (
-              <div className="form-options form-options-end">
-                <Link
-                  href={`/forgot-password?return_to=${encodeURIComponent(next)}`}
-                >
-                  Forgot password?
-                </Link>
-              </div>
-            ) : (
+            {mode === "signup" && (
               <p className="form-assurance">
-                By creating an account, you agree to the Robotics Center terms
-                and privacy policy.
+                By creating an account, you agree to the Robotics Center{" "}
+                <a href="https://www.roboticscenter.ai/terms">terms</a> and{" "}
+                <a href="https://www.roboticscenter.ai/privacy-policy">
+                  privacy policy
+                </a>
+                .
               </p>
             )}
 
@@ -355,10 +386,10 @@ export function AuthPortal({
               {busy
                 ? "Please wait…"
                 : mode === "signin"
-                  ? "Sign In"
+                  ? "Sign in"
                   : signupSubmitted
-                    ? "Check Your Email"
-                    : "Create Account"}
+                    ? "Check your email"
+                    : "Create account"}
             </button>
 
             {notice ? (

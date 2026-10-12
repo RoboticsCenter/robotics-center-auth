@@ -1,5 +1,4 @@
 import { AuthShell } from "@/components/auth-shell";
-import { Brand } from "@/components/brand";
 import { CenterOsIcon, PlatformIcon } from "@/components/icons";
 import type { DeferredApplicationId } from "@/lib/auth/application-source";
 
@@ -39,8 +38,6 @@ export function ApplicationUnavailable({
         className="auth-card auth-card-secondary unavailable-card"
         aria-labelledby="unavailable-title"
       >
-        <div className="card-highlight" aria-hidden="true" />
-        <Brand />
         <span
           className={["app-icon", details.iconClassName, "unavailable-app-icon"].join(
             " ",
@@ -71,9 +68,6 @@ export function ApplicationUnavailable({
             Go to Robotics Center Website
           </a>
         </div>
-        <p className="launcher-note">
-          No sign-in request was started and no account changes were made.
-        </p>
       </section>
     </AuthShell>
   );

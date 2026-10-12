@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { FormEvent, useState } from "react";
 import { AuthShell } from "@/components/auth-shell";
-import { Brand } from "@/components/brand";
 import { BackIcon, EyeIcon } from "@/components/icons";
 import { createBrowserSupabaseClient } from "@/lib/supabase/browser";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
@@ -66,8 +65,6 @@ export function PreviewForm({ mode, returnTo = "/launcher" }: PreviewFormProps) 
   return (
     <AuthShell>
       <section className="auth-card auth-card-secondary">
-        <div className="card-highlight" aria-hidden="true" />
-        <Brand />
         <div className="secondary-heading">
           <p className="eyebrow">
             {isForgot ? "Account recovery" : "Secure your account"}
@@ -146,10 +143,10 @@ export function PreviewForm({ mode, returnTo = "/launcher" }: PreviewFormProps) 
             {busy
               ? "Please wait…"
               : isForgot && notice
-                ? "Reset Email Sent"
+                ? "Reset email sent"
               : isForgot
-                ? "Send Reset Link"
-                : "Update Password"}
+                ? "Send reset link"
+                : "Update password"}
           </button>
           {notice ? (
             <div className="form-success" role="status" aria-live="polite">

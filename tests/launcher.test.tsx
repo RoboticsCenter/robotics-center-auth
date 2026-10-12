@@ -1,8 +1,9 @@
 import { Children, isValidElement, type ReactElement, type ReactNode } from "react";
 import { describe, expect, test } from "vitest";
 import LauncherPage from "@/app/launcher/page";
+import { NavArrowIcon } from "@/components/icons";
 
-function elements(node: ReactNode, type: string): ReactElement[] {
+function elements(node: ReactNode, type: ReactElement["type"]): ReactElement[] {
   if (!isValidElement(node)) return [];
   const current = node.type === type ? [node] : [];
   const props = node.props as { children?: ReactNode };
@@ -54,9 +55,31 @@ describe("application launcher", () => {
 
   test("uses production-ready application availability copy", () => {
     const copy = textContent(LauncherPage());
-    expect(copy).toContain("Central account");
-    expect(copy).toContain("Sign-in not available yet");
+    expect(copy).toContain("Choose an app");
+    expect(copy).toContain("Website and Data Platform sign-in are available now.");
+    expect(copy).toContain("Sign-in coming soon");
+    expect(copy).not.toContain("access or refresh tokens");
     expect(copy).not.toContain("Authentication preview");
     expect(copy).not.toContain("being tested");
+  });
+
+  test("shows the navbar arrow only on the available application link", () => {
+    const page = LauncherPage();
+    const availableCards = elements(page, "a").filter(
+      (item) => props(item).className === "app-card",
+    );
+    const unavailableCards = elements(page, "div").filter(
+      (item) => props(item)["aria-disabled"] === "true",
+    );
+
+    expect(availableCards.map((card) => props(card).href)).toEqual([
+      "https://www.roboticscenter.ai/",
+      "https://platform.roboticscenter.ai/",
+    ]);
+    for (const card of availableCards) {
+      expect(elements(card, NavArrowIcon)).toHaveLength(1);
+    }
+    expect(unavailableCards).toHaveLength(1);
+    expect(unavailableCards.flatMap((card) => elements(card, NavArrowIcon))).toHaveLength(0);
   });
 });

@@ -38,24 +38,20 @@ export default async function ConsentPage({ searchParams }: Props) {
     if (isCenterOSDesktopRedirectUrl(new URL(data.redirect_url))) {
       return (
         <AuthShell>
-          <section className="auth-card auth-card-secondary consent-card">
-            <div className="card-highlight" aria-hidden="true" />
-            <Brand />
-            <div className="secondary-heading">
-              <p className="eyebrow">Secure connection</p>
-              <h1>Open CenterOS</h1>
-              <p>
-                Your account is approved. Return to CenterOS to finish signing
-                in.
-              </p>
-            </div>
+          <ConsentCard
+            clientName="CenterOS"
+            scopes={[]}
+            eyebrow="Secure connection"
+            title="Open CenterOS"
+            description="Your account is approved. Return to CenterOS to finish signing in."
+          >
             <a
               className="primary-button button-link"
               href={data.redirect_url}
             >
               Open CenterOS
             </a>
-          </section>
+          </ConsentCard>
         </AuthShell>
       );
     }

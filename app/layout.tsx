@@ -1,5 +1,23 @@
 import type { Metadata, Viewport } from "next";
+import { DM_Sans, Genos, Share_Tech } from "next/font/google";
 import "./globals.css";
+
+const dmSans = DM_Sans({
+  subsets: ["latin"],
+  display: "swap",
+  variable: "--font-dm-sans",
+});
+const shareTech = Share_Tech({
+  weight: "400",
+  subsets: ["latin"],
+  display: "swap",
+  variable: "--font-share-tech",
+});
+const genos = Genos({
+  subsets: ["latin"],
+  display: "swap",
+  variable: "--font-genos",
+});
 
 export const metadata: Metadata = {
   title: {
@@ -15,8 +33,8 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  colorScheme: "dark",
-  themeColor: "#070b15",
+  colorScheme: "light",
+  themeColor: "#06182f",
 };
 
 export default function RootLayout({
@@ -25,7 +43,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html
+      lang="en"
+      className={`${dmSans.variable} ${shareTech.variable} ${genos.variable}`}
+    >
       <body>{children}</body>
     </html>
   );

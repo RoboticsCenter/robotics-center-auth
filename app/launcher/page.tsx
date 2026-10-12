@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { AuthShell } from "@/components/auth-shell";
 import { Brand } from "@/components/brand";
 import {
-  ArrowIcon,
+  NavArrowIcon,
   CenterOsIcon,
   GlobeIcon,
   PlatformIcon,
@@ -16,7 +16,7 @@ const applications = [
   {
     name: "Robotics Center",
     description:
-      "Shop robotics products, manage orders, and access your customer account.",
+      "Shop products and manage orders.",
     href: "https://www.roboticscenter.ai/",
     domain: "roboticscenter.ai",
     className: "app-icon-blue",
@@ -26,7 +26,7 @@ const applications = [
   {
     name: "Data Platform",
     description:
-      "Manage robotics data, deployments, analytics, and connected operations.",
+      "Manage robotics data and deployments.",
     href: "https://platform.roboticscenter.ai/",
     domain: "platform.roboticscenter.ai",
     className: "app-icon-violet",
@@ -36,7 +36,7 @@ const applications = [
   {
     name: "CenterOS",
     description:
-      "Open the operating workspace for teams, robots, workflows, and automation.",
+      "Manage robots and workflows.",
     href: "https://centeros.roboticscenter.ai/",
     domain: "centeros.roboticscenter.ai",
     className: "app-icon-cyan",
@@ -59,13 +59,8 @@ export default function LauncherPage() {
         </header>
 
         <div className="launcher-intro">
-          <span className="preview-pill">Central account</span>
-          <h1 id="launcher-title">Where would you like to go?</h1>
-          <p>
-            Use your Robotics Center account across connected applications.
-            Website access is available now; Platform and CenterOS sign-in will
-            be added separately.
-          </p>
+          <h1 id="launcher-title">Choose an app</h1>
+          <p>Website access is available now.</p>
         </div>
 
         <div className="app-grid">
@@ -77,17 +72,17 @@ export default function LauncherPage() {
                   <Icon />
                 </span>
                 <span className="app-card-copy">
-                  <strong>{application.name}</strong>
-                  <span>{application.description}</span>
+                  <span className="app-card-title">
+                    <strong>{application.name}</strong>
+                    {application.available ? <NavArrowIcon className="app-arrow" /> : null}
+                  </span>
+                  <span className="app-card-description">{application.description}</span>
                   <small>
                     {application.available
                       ? application.domain
-                      : `${application.domain} · Sign-in not available yet`}
+                      : "Sign-in coming soon"}
                   </small>
                 </span>
-                {application.available ? (
-                  <ArrowIcon className="app-arrow" />
-                ) : null}
               </>
             );
 
@@ -110,11 +105,6 @@ export default function LauncherPage() {
             );
           })}
         </div>
-
-        <p className="launcher-note">
-          Available application links never carry access or refresh tokens in
-          the URL.
-        </p>
       </section>
     </AuthShell>
   );

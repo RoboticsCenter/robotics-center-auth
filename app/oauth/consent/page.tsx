@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { AuthShell } from "@/components/auth-shell";
-import { Brand } from "@/components/brand";
+import { ConsentCard } from "@/components/consent-card";
 import { ConsentActions } from "@/components/consent-actions";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import {
@@ -38,24 +38,20 @@ export default async function ConsentPage({ searchParams }: Props) {
     if (isCenterOSDesktopRedirectUrl(new URL(data.redirect_url))) {
       return (
         <AuthShell>
-          <section className="auth-card auth-card-secondary consent-card">
-            <div className="card-highlight" aria-hidden="true" />
-            <Brand />
-            <div className="secondary-heading">
-              <p className="eyebrow">Secure connection</p>
-              <h1>Open CenterOS</h1>
-              <p>
-                Your account is approved. Return to CenterOS to finish signing
-                in.
-              </p>
-            </div>
+          <ConsentCard
+            clientName="CenterOS"
+            scopes={[]}
+            eyebrow="Secure connection"
+            title="Open CenterOS"
+            description="Your account is approved. Return to CenterOS to finish signing in."
+          >
             <a
               className="primary-button button-link"
               href={data.redirect_url}
             >
               Open CenterOS
             </a>
-          </section>
+          </ConsentCard>
         </AuthShell>
       );
     }
@@ -74,26 +70,9 @@ export default async function ConsentPage({ searchParams }: Props) {
   const scopes = data.scope.split(" ").filter(Boolean);
   return (
     <AuthShell>
-      <section className="auth-card auth-card-secondary consent-card">
-        <div className="card-highlight" aria-hidden="true" />
-        <Brand />
-        <div className="secondary-heading">
-          <p className="eyebrow">Secure connection</p>
-          <h1>Continue to {data.client.name}</h1>
-          <p>
-            Confirm that this trusted Robotics Center application may use your
-            account.
-          </p>
-        </div>
-        {scopes.length ? (
-          <ul className="consent-scopes">
-            {scopes.map((scope) => (
-              <li key={scope}>{scope}</li>
-            ))}
-          </ul>
-        ) : null}
+      <ConsentCard clientName={data.client.name} scopes={scopes}>
         <ConsentActions authorizationId={authorizationId} />
-      </section>
+      </ConsentCard>
     </AuthShell>
   );
 }

@@ -7,6 +7,7 @@ import {
 } from "react";
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 import { ConsentActions } from "@/components/consent-actions";
+import { ConsentCard } from "@/components/consent-card";
 
 const mocks = vi.hoisted(() => ({
   createServerSupabaseClient: vi.fn(),
@@ -168,6 +169,7 @@ describe("OAuth consent page", () => {
           authorization_id: "authorization-id",
         }),
       });
+      const consentCard = findElement(page, ConsentCard);
       const launch = findElement(page, "a") as ReactElement<{
         children?: ReactNode;
         className?: string;
@@ -179,6 +181,11 @@ describe("OAuth consent page", () => {
         href: redirectUrl,
       });
       expect(launch?.props.children).toBe("Open CenterOS");
+      expect(consentCard?.props).toMatchObject({
+        clientName: "CenterOS",
+        scopes: [],
+        title: "Open CenterOS",
+      });
       expect(mocks.redirect).not.toHaveBeenCalled();
     },
   );

@@ -42,6 +42,17 @@ export function ArrowIcon({ className }: IconProps) {
   );
 }
 
+export function NavArrowIcon({ className, reverse = false }: IconProps & { reverse?: boolean }) {
+  return (
+    <svg className={className} viewBox="0 0 12 9" aria-hidden="true" focusable="false">
+      <path
+        transform={reverse ? "translate(12 0) scale(-1 1)" : undefined}
+        d="M0 3.625h8.2L5.75 1.23 6.99 0 12 4.5 6.99 9 5.75 7.77 8.2 5.375H0Z"
+      />
+    </svg>
+  );
+}
+
 export function BackIcon({ className }: IconProps) {
   return (
     <svg className={className} viewBox="0 0 24 24" aria-hidden="true">

@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { AuthShell } from "@/components/auth-shell";
-import { Brand } from "@/components/brand";
 
 export const metadata: Metadata = {
   title: "Sign out",
@@ -17,8 +16,6 @@ export default async function LogoutPage({ searchParams }: Props) {
   return (
     <AuthShell>
       <section className="auth-card auth-card-secondary">
-        <div className="card-highlight" aria-hidden="true" />
-        <Brand />
         <div className="secondary-heading">
           <p className="eyebrow">Secure sign out</p>
           <h1>Sign out everywhere?</h1>
@@ -32,7 +29,7 @@ export default async function LogoutPage({ searchParams }: Props) {
             <input type="hidden" name="return_to" value={returnTo} />
           ) : null}
           <button className="primary-button" type="submit">
-            Sign Out
+            Sign out
           </button>
         </form>
         <Link className="back-link" href="/launcher">

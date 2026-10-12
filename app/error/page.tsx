@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { AuthShell } from "@/components/auth-shell";
-import { Brand } from "@/components/brand";
 import { BackIcon, ShieldIcon } from "@/components/icons";
 
 export const metadata: Metadata = {
@@ -12,8 +11,6 @@ export default function AuthErrorPage() {
   return (
     <AuthShell>
       <section className="auth-card auth-card-secondary error-card">
-        <div className="card-highlight" aria-hidden="true" />
-        <Brand />
         <div className="error-symbol" aria-hidden="true">
           <ShieldIcon />
         </div>
@@ -26,7 +23,7 @@ export default function AuthErrorPage() {
           </p>
         </div>
         <Link className="primary-button button-link" href="/">
-          Return to Sign In
+          Return to sign in
         </Link>
         <Link className="back-link" href="/forgot-password">
           <BackIcon className="back-icon" />
